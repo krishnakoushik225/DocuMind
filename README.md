@@ -1,4 +1,3 @@
----
 # Docu-Mind: AI-Powered Intelligent Document Q&A System  
 
 ## 📌 Overview  
