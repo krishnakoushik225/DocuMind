@@ -76,7 +76,7 @@ These tools measure **contextual relevance** and **response accuracy** without t
 - This ensures the chatbot maintains factual and contextually sound output.
 
 ### Reference Screenshots
-![image](https://github.com/user-attachments/assets/721a80f1-4a70-4059-ac03-bb0bb452f45d)
+![image](<img width="2298" height="1452" alt="image" src="https://github.com/user-attachments/assets/5591b099-4111-4e3d-aa3f-35318fa50dd6" />)
 ![image](https://github.com/user-attachments/assets/c68e0105-3bf9-48e4-a617-e6cf9acddc86)
 ![image](https://github.com/user-attachments/assets/e33d6f9f-3d95-46fa-8329-fd68437ddbe8)
 
