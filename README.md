@@ -78,6 +78,7 @@ These tools measure **contextual relevance** and **response accuracy** without t
 ### Reference Screenshots
 ![Home Page](./Home%20Page.png)
 ![Sample Query](./Sample%20Query.png)
+![Another Sample Query](./Picture1.png)
 
 ### 🔗 **Useful Links**
 - [LlamaIndex Relevance Evaluation Guide](https://docs.llamaindex.ai/en/module_guides/evaluating/usage_pattern.html)  
