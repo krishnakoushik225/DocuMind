@@ -75,6 +75,81 @@ These tools measure **contextual relevance** and **response accuracy** without t
 - The **`RelevancyEvaluator`** within LlamaIndex verifies whether generated responses align with the retrieved document sections.  
 - This ensures the chatbot maintains factual and contextually sound output.
 
+### Trustworthiness, Explainability & Transparency
+
+**Docu-Mind** is designed with Trustworthy AI principles to ensure that every answer is not only correct but also traceable, explainable, and verifiable by the user. The system prioritizes reliability through transparent retrieval steps and evidence-based reasoning.
+
+### Evidence-Backed Answers
+
+All responses are generated strictly from retrieved text chunks extracted from the uploaded PDF.
+Docu-Mind does not hallucinate or guess—it grounds every answer in actual document content.
+
+- Retrieved evidence snippets are included with answers.
+
+- Users can verify exactly which parts of the document support the response.
+
+- This creates a fully auditable chain from Query → Retrieval → LLM Reasoning → Final Answer.
+
+### Explainability by Design
+
+Docu-Mind provides visibility into how an answer was formed.
+
+- Shows the retrieval results used by the LLM.
+
+- Offers contextual segments alongside the generated output.
+
+- Makes the reasoning process transparent, reducing ambiguity and increasing user confidence.
+
+This design aligns with the explainability requirement highlighted in the project evaluation framework.
+
+### Transparency in Retrieval & Ranking
+
+The system reveals:
+
+- Which chunks were selected
+
+- Their similarity ranking
+
+- How they contributed to the final LLM response
+
+This degree of transparency ensures the entire pipeline is open, interpretable, and user-verifiable.
+
+### Hallucination & Error Mitigation
+
+To maintain high trustworthiness:
+
+- The LLM is constrained to answer only from retrieved context.
+
+- Responses are cross-verified with document snippets.
+
+- Ambiguous questions trigger clarification instead of confident incorrect answers.
+
+- External fact-checking (optional) further strengthens reliability.
+
+### Bias Minimization & Neutrality
+
+Docu-Mind reduces bias by:
+
+- Using multiple high-quality embeddings to avoid skewed retrieval
+
+- Ensuring answers remain strictly factual
+
+- Preventing subjective or opinion-based generation
+
+- Handling unclear questions responsibly rather than forcing an answer
+
+###� Verifiable Output for Every Response
+
+Every answer can be independently validated by the user through:
+
+- Displayed evidence snippets
+
+- Citations tied directly to the PDF
+
+- Clear justification embedded in the output
+
+This ensures the system maintains a high level of trust, accuracy, and transparency—consistent with trustworthy AI guidelines.
+
 ### Reference Screenshots
 ## Home Page:
 ![Home Page](./Home%20Page.png)
