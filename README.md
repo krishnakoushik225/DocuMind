@@ -76,16 +76,16 @@ These tools measure **contextual relevance** and **response accuracy** without t
 - This ensures the chatbot maintains factual and contextually sound output.
 
 ### Reference Screenshots
-##Home Page:
+## Home Page:
 ![Home Page](./Home%20Page.png)
 
-##Sample-1 Response:
+## Sample-1 Response:
 ![Sample Query](./Sample%20Query.png)
 
-##Sample-2 Response(Trustworthiness)
+## Sample-2 Response(Trustworthiness)
 ![Another Sample Query](./Picture1.png)
 
-##Explainability and Transparency
+## Explainability and Transparency
 ![Transparency and explainability](./Picture2.png)
 
 ### 🔗 **Useful Links**
