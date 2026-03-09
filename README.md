@@ -1,213 +1,218 @@
-# Docu-Mind: AI-Powered Intelligent Document Q&A System  
+# DocuMind 📄
+### AI-Powered Intelligent Document Q&A · RAG + GPT-4 + Pinecone · Citation-Grounded Answers
 
-## 📌 Overview  
+[![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-backend-green?logo=fastapi)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-frontend-blue?logo=react)](https://reactjs.org)
+[![Pinecone](https://img.shields.io/badge/Pinecone-Vector%20DB-purple)](https://pinecone.io)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-black?logo=openai)](https://openai.com)
+[![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 
-**Docu-Mind** is an intelligent AI solution that allows users to ask natural language questions about lengthy or complex PDF files and receive precise answers drawn directly from the document content.  
-Built on **Retrieval-Augmented Generation (RAG)**, it integrates semantic retrieval with generative reasoning to produce **reliable, contextually accurate, and verifiable** results.
-
-### 🔹 Key Technologies:
-- **LLMs & Embeddings**: OpenAI GPT-4 and `text-embedding-ada-002`  
-- **Vector Database**: Pinecone (for semantic document retrieval)  
-- **Backend Framework**: FastAPI (Python)  
-- **Frontend Framework**: React.js (Chat-based interface)  
-- **PDF Processor**: PyPDF2 (structured text extraction; no OCR support)  
+> **DocuMind** is a production-grade RAG (Retrieval-Augmented Generation) document assistant. Upload any PDF, ask natural language questions, and get accurate answers grounded strictly in your document content — with inline citations and full transparency into what was retrieved.
 
 ---
 
-## ⚙️ System Architecture  
+## 🎬 Demo
 
-### **High-Level Architecture Overview**
-
-1. **User Interaction**
-   - Through the **React frontend**, users can upload PDF documents and enter their queries.  
-   - The system interprets the query and processes it using OpenAI’s **LLM** combined with precomputed **vector embeddings**.
-
-2. **Backend (FastAPI)**
-   - Handles all REST APIs related to PDF upload, query processing, and interaction with the LLM.  
-   - Coordinates communication among modules responsible for **text extraction**, **vector storage**, and **query resolution**.
-
-3. **PDF Processing Module**
-   - Extracts and preprocesses textual data from PDF files using **PyPDF2**.  
-   - Divides text into **structured and meaningful chunks** to enhance search and retrieval efficiency.
-
-4. **Embedding Model (OpenAI)**
-   - Converts each text segment into numerical **vector embeddings** via `text-embedding-ada-002`.  
-   - These embeddings are stored in **Pinecone** for quick similarity-based searches.
-
-5. **Vector Database (Pinecone)**
-   - Maintains the document chunks and their embeddings.  
-   - Supports **rapid semantic similarity lookups** to find the most relevant portions of the document.
-
-6. **Semantic Retrieval & Context Builder**
-   - Encodes each user query into a vector representation.  
-   - Retrieves and ranks document chunks in **Pinecone** based on contextual similarity.  
-   - Constructs a **context window** containing the top-matching text for LLM processing.
-
-7. **Generative Reasoning (LLM Layer)**
-   - The LLM combines the user query with retrieved context to generate a coherent, well-structured answer.
-
-8. **Response to User**
-   - The chatbot displays the **final answer** in the frontend interface, including relevant context or citations.
-
----
-
-## 🔄 Data Flow Process  
-
-1️⃣ **PDF Upload** → The user uploads a document via the web interface.  
-2️⃣ **Text Extraction & Chunking** → Extracted text is cleaned and divided into smaller, searchable segments.  
-3️⃣ **Embedding Generation** → Each segment is converted into a **vector embedding** using OpenAI’s API.  
-4️⃣ **Storage in Pinecone** → Embeddings are stored for **fast retrieval**.  
-5️⃣ **Query Submission** → The user submits a question.  
-6️⃣ **Semantic Retrieval** → Pinecone identifies relevant text chunks from the document.  
-7️⃣ **Context Formation** → The top matches are compiled into a prompt for GPT-4.  
-8️⃣ **Answer Generation** → The model generates a precise response based on retrieved context.  
-9️⃣ **Response Display** → The final answer is presented in the chat interface.
-
----
-
-## 📊 Evaluating System Responses  
-
-To ensure **Docu-Mind** provides accurate and meaningful outputs, response quality is assessed using **LlamaIndex** evaluation methods.  
-These tools measure **contextual relevance** and **response accuracy** without the need for pre-labeled datasets.
-
-### **Relevance Evaluation (No Ground Truth Needed)**
-
-- The **`RelevancyEvaluator`** within LlamaIndex verifies whether generated responses align with the retrieved document sections.  
-- This ensures the chatbot maintains factual and contextually sound output.
-
-### Trustworthiness, Explainability & Transparency
-
-**Docu-Mind** is designed with Trustworthy AI principles to ensure that every answer is not only correct but also traceable, explainable, and verifiable by the user. The system prioritizes reliability through transparent retrieval steps and evidence-based reasoning.
-
-### Evidence-Backed Answers
-
-All responses are generated strictly from retrieved text chunks extracted from the uploaded PDF.
-Docu-Mind does not hallucinate or guess—it grounds every answer in actual document content.
-
-- Retrieved evidence snippets are included with answers.
-
-- Users can verify exactly which parts of the document support the response.
-
-- This creates a fully auditable chain from Query → Retrieval → LLM Reasoning → Final Answer.
-
-### Explainability by Design
-
-Docu-Mind provides visibility into how an answer was formed.
-
-- Shows the retrieval results used by the LLM.
-
-- Offers contextual segments alongside the generated output.
-
-- Makes the reasoning process transparent, reducing ambiguity and increasing user confidence.
-
-This design aligns with the explainability requirement highlighted in the project evaluation framework.
-
-### Transparency in Retrieval & Ranking
-
-The system reveals:
-
-- Which chunks were selected
-
-- Their similarity ranking
-
-- How they contributed to the final LLM response
-
-This degree of transparency ensures the entire pipeline is open, interpretable, and user-verifiable.
-
-### Hallucination & Error Mitigation
-
-To maintain high trustworthiness:
-
-- The LLM is constrained to answer only from retrieved context.
-
-- Responses are cross-verified with document snippets.
-
-- Ambiguous questions trigger clarification instead of confident incorrect answers.
-
-- External fact-checking (optional) further strengthens reliability.
-
-### Bias Minimization & Neutrality
-
-Docu-Mind reduces bias by:
-
-- Using multiple high-quality embeddings to avoid skewed retrieval
-
-- Ensuring answers remain strictly factual
-
-- Preventing subjective or opinion-based generation
-
-- Handling unclear questions responsibly rather than forcing an answer
-
-###� Verifiable Output for Every Response
-
-Every answer can be independently validated by the user through:
-
-- Displayed evidence snippets
-
-- Citations tied directly to the PDF
-
-- Clear justification embedded in the output
-
-This ensures the system maintains a high level of trust, accuracy, and transparency—consistent with trustworthy AI guidelines.
-
-### Reference Screenshots
-## Home Page:
+### Home Page
 ![Home Page](./Home%20Page.png)
 
-## Sample-1 Response:
+### Sample Response
 ![Sample Query](./Sample%20Query.png)
 
-## Sample-2 Response(Trustworthiness)
-![Another Sample Query](./Picture1.png)
+### Trustworthiness & Evidence-Backed Output
+![Trustworthy Response](./Picture1.png)
 
-## Explainability and Transparency
-![Transparency and explainability](./Picture2.png)
-
-### 🔗 **Useful Links**
-- [LlamaIndex Relevance Evaluation Guide](https://docs.llamaindex.ai/en/module_guides/evaluating/usage_pattern.html)  
-- [LlamaIndex Relevancy Evaluator](https://docs.llamaindex.ai/en/stable/examples/evaluation/relevancy_eval.html)  
-- [Evaluating Search with Human Judgment](https://dtunkelang.medium.com/evaluating-search-using-human-judgement-fbb2eeba37d9)
+### Explainability & Transparency
+![Explainability](./Picture2.png)
 
 ---
 
-## 🚀 Getting Started  
+## ✨ What Makes DocuMind Different
 
-### **1️⃣ Clone the Repository**
-```bash
-git clone https://github.com/your-repo/docu-mind.git
-cd docu-mind
-cd backend
+| Feature | Basic RAG | DocuMind |
+|---------|-----------|----------|
+| Retrieval | Naive top-k chunks | Semantic similarity ranking via Pinecone |
+| Answers | Raw LLM generation | Strictly grounded in retrieved document context |
+| Hallucination Prevention | None | LLM constrained to retrieved context only |
+| Evaluation | None | LlamaIndex RelevancyEvaluator — no ground truth needed |
+| Transparency | Black box | Retrieved chunks + similarity ranking shown to user |
+
+---
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     INGESTION PIPELINE                       │
+│                                                              │
+│  PDF Upload → PyPDF2 Extraction → Text Chunking →           │
+│  text-embedding-ada-002 → Pinecone Upsert                    │
+└──────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼───────────────────────────────┐
+│                      QUERY PIPELINE                          │
+│                                                              │
+│  User Question → Embed Query → Pinecone Similarity Search →  │
+│  Context Formation → GPT-4 Generation →                      │
+│  Citation-Grounded Answer + Evidence Snippets                │
+└──────────────────────────────────────────────────────────────┘
+                              │
+┌─────────────────────────────▼───────────────────────────────┐
+│                    EVALUATION LAYER                          │
+│                                                              │
+│  LlamaIndex RelevancyEvaluator → Response Quality Scoring   │
+│  (no labeled dataset required)                               │
+└──────────────────────────────────────────────────────────────┘
 ```
 
-### **2️⃣ Install Dependencies**
+### Pipeline Stages
 
-```sh
+| Stage | Description |
+|-------|-------------|
+| **PDF Extraction** | PyPDF2 extracts structured text from uploaded PDFs |
+| **Text Chunking** | Document split into meaningful, searchable segments |
+| **Embedding** | Each chunk embedded via `text-embedding-ada-002` |
+| **Pinecone Storage** | Vector embeddings stored for fast semantic retrieval |
+| **Query Embedding** | User question embedded and matched against document chunks |
+| **Context Formation** | Top-ranked chunks compiled into GPT-4 prompt |
+| **GPT-4 Generation** | Answer generated strictly from retrieved context |
+| **Evaluation** | LlamaIndex RelevancyEvaluator scores response quality |
+
+---
+
+## 🔒 Trustworthy AI by Design
+
+DocuMind is built around four trustworthy AI principles:
+
+**Evidence-Backed Answers** — The LLM is constrained to answer only from retrieved document chunks. No hallucination, no guessing. Retrieved snippets are shown alongside every answer so users can verify.
+
+**Explainability** — Every response shows which document sections were retrieved, their similarity scores, and how they contributed to the final answer. The full chain from Query → Retrieval → Reasoning → Answer is visible.
+
+**Transparency** — Retrieved chunks, their rankings, and their contribution to the response are all surfaced to the user — not hidden in a black box.
+
+**Hallucination Mitigation** — Ambiguous queries trigger clarification rather than confident incorrect answers. The system never generates beyond its retrieved evidence.
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.10+
+- Node.js 18+
+- OpenAI API key
+- Pinecone API key (free tier available)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/krishnakoushik225/DocuMind
+cd DocuMind
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
 pip install -r requirements.txt
 ```
 
-### **3️⃣ Run the Backend**
-
-```sh
-uvicorn main:app --reload
+Create a `.env` file:
+```
+OPENAI_API_KEY=your_key
+PINECONE_API_KEY=your_key
+PINECONE_INDEX=documind
 ```
 
-### **4️⃣ Start the Frontend**
+Run the backend:
+```bash
+uvicorn main:app --reload
+# Runs at http://127.0.0.1:8000
+```
 
-```sh
-cd ../
-cd ui-v1
+### 3. Frontend Setup
+
+```bash
+cd ../ui-v1
 npm install
 npm run dev
+# Runs at http://localhost:5173
 ```
 
 ---
 
-## 🎯 Contributing
+## 🎮 Usage
 
-Contributions are welcome! Feel free to open issues or submit pull requests.
+1. **Upload** — drag and drop a PDF via the web interface
+2. **Wait** — DocuMind extracts, chunks, embeds, and indexes (~5 seconds)
+3. **Ask** — type any natural language question about the document
+4. **Read** — get a grounded answer with retrieved evidence snippets and citations
 
 ---
 
-## 📜 License
+## 🛠️ Tech Stack
 
-MIT License. See `LICENSE` for details.
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React.js (chat-based interface) |
+| Backend | FastAPI (Python) |
+| PDF Processing | PyPDF2 (structured text extraction) |
+| Embedding Model | OpenAI `text-embedding-ada-002` |
+| Vector Database | Pinecone |
+| LLM | OpenAI GPT-4 |
+| Evaluation | LlamaIndex RelevancyEvaluator |
+
+---
+
+## 📁 Project Structure
+
+```
+DocuMind/
+├── backend/
+│   ├── main.py              # FastAPI entrypoint
+│   └── requirements.txt
+├── ui-v1/
+│   ├── src/                 # React frontend
+│   ├── package.json
+│   └── vite.config.ts
+├── Home Page.png            # Screenshots
+├── Sample Query.png
+├── Picture1.png
+├── Picture2.png
+└── README.md
+```
+
+---
+
+## 📊 Evaluation
+
+Response quality is assessed using **LlamaIndex** without needing pre-labeled datasets:
+
+- **RelevancyEvaluator** — verifies generated responses align with retrieved document sections
+- **Contextual relevance scoring** — measures how well retrieved chunks match the user query
+- **Factual consistency** — cross-verifies LLM output against source evidence
+
+**References:**
+- [LlamaIndex Relevancy Evaluator](https://docs.llamaindex.ai/en/stable/examples/evaluation/relevancy_eval.html)
+- [LlamaIndex Evaluation Guide](https://docs.llamaindex.ai/en/module_guides/evaluating/usage_pattern.html)
+
+---
+
+## 🔭 Roadmap
+
+- [ ] Multi-document cross-reference queries
+- [ ] Conversation memory with follow-up questions
+- [ ] Agentic upgrade — multi-hop reasoning across document sections
+- [ ] OCR support for scanned PDFs
+- [ ] Document comparison mode
+- [ ] Export annotated answers as PDF
+
+---
+
+## 📄 License
+
+MIT — free to use and build on.
+
+---
+
+*Built by [Krishna Koushik Unnam](https://github.com/krishnakoushik225) · AI Systems Developer*
