@@ -1,97 +1,165 @@
 # DocuMind 📄
-### AI-Powered Intelligent Document Q&A · RAG + GPT-4 + Pinecone · Citation-Grounded Answers
+### Explainable RAG Document Assistant · GPT-4 + Pinecone + FastAPI + React
 
 [![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/FastAPI-backend-green?logo=fastapi)](https://fastapi.tiangolo.com)
 [![React](https://img.shields.io/badge/React-frontend-blue?logo=react)](https://reactjs.org)
-[![Pinecone](https://img.shields.io/badge/Pinecone-Vector%20DB-purple)](https://pinecone.io)
+[![Pinecone](https://img.shields.io/badge/Pinecone-VectorDB-purple)](https://pinecone.io)
 [![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-black?logo=openai)](https://openai.com)
+[![LlamaIndex](https://img.shields.io/badge/LlamaIndex-Retrieval-orange)](https://llamaindex.ai)
 [![License: MIT](https://img.shields.io/badge/License-MIT-lightgrey)](LICENSE)
 
-> **DocuMind** is a production-grade RAG (Retrieval-Augmented Generation) document assistant. Upload any PDF, ask natural language questions, and get accurate answers grounded strictly in your document content — with inline citations and full transparency into what was retrieved.
+> **DocuMind** is a production-grade explainable RAG system — upload any PDF, ask natural language questions, and get answers grounded strictly in your document content, with full retrieval transparency, per-document scoped queries, and LlamaIndex-powered response evaluation.
 
 ---
 
 ## 🎬 Demo
 
 ### Home Page
-![Home Page](./Home%20Page.png)
+![Home Page](documind-home.png)
 
-### Sample Response
-![Sample Query](./Sample%20Query.png)
+### Citation-Grounded Response
+![Sample Query](documind-query.png)
 
-### Trustworthiness & Evidence-Backed Output
-![Trustworthy Response](./Picture1.png)
+### Trustworthy AI Output
+![Trustworthy Response](documind-trustworthy.png)
 
-### Explainability & Transparency
-![Explainability](./Picture2.png)
+### Explainability & Retrieval Transparency
+![Explainability](documind-explainability.png)
 
 ---
 
-## ✨ What Makes DocuMind Different
+## 🎯 What Makes DocuMind Different from a Basic RAG Chatbot
 
-| Feature | Basic RAG | DocuMind |
-|---------|-----------|----------|
-| Retrieval | Naive top-k chunks | Semantic similarity ranking via Pinecone |
-| Answers | Raw LLM generation | Strictly grounded in retrieved document context |
-| Hallucination Prevention | None | LLM constrained to retrieved context only |
+Most RAG apps do: `question → embed → top-k chunks → generate`
+
+DocuMind does:
+```
+PDF upload
+  → PyPDF2 extraction + regex cleaning
+  → CharacterTextSplitter (configurable chunk_size + overlap)
+  → text-embedding-ada-002 → Pinecone upsert (with doc_id metadata)
+  → per-document scoped query (doc_id + chunk_id filtering)
+  → context-constrained GPT-4 prompt (no hallucination beyond retrieved evidence)
+  → answer + retrieved_chunks returned together
+  → LlamaIndex RelevancyEvaluator scoring (no labeled dataset needed)
+```
+
+| Dimension | Basic RAG | DocuMind |
+|---|---|---|
+| Retrieval scope | Global index — all documents | Per-document scoped via `doc_id` filter |
+| Hallucination prevention | None | LLM prompt hard-constrained to retrieved context |
+| Empty retrieval handling | Hallucinates or crashes | Returns `"No relevant information found."` explicitly |
+| Transparency | Answer only | Answer + retrieved chunks returned together |
 | Evaluation | None | LlamaIndex RelevancyEvaluator — no ground truth needed |
-| Transparency | Black box | Retrieved chunks + similarity ranking shown to user |
+| Document management | No | `GET /api/list_documents` — full document registry |
 
 ---
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                     INGESTION PIPELINE                       │
-│                                                              │
-│  PDF Upload → PyPDF2 Extraction → Text Chunking →           │
-│  text-embedding-ada-002 → Pinecone Upsert                    │
-└──────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────▼───────────────────────────────┐
-│                      QUERY PIPELINE                          │
-│                                                              │
-│  User Question → Embed Query → Pinecone Similarity Search →  │
-│  Context Formation → GPT-4 Generation →                      │
-│  Citation-Grounded Answer + Evidence Snippets                │
-└──────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────▼───────────────────────────────┐
-│                    EVALUATION LAYER                          │
-│                                                              │
-│  LlamaIndex RelevancyEvaluator → Response Quality Scoring   │
-│  (no labeled dataset required)                               │
-└──────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    A[PDF Upload<br/>POST /api/upload] --> B[PyPDF2 Text Extraction]
+    B --> C[Text Cleaning<br/>regex — strip non-alphabetic]
+    C --> D[CharacterTextSplitter<br/>separator=newline · chunk_size · overlap]
+    D --> E[text-embedding-ada-002<br/>OpenAI Embeddings]
+    E --> F[(Pinecone Vector Store<br/>doc_id metadata per chunk)]
+
+    G[User Query<br/>POST /api/query] --> H[Embed Query<br/>get_embedding_model]
+    H --> I[Pinecone Similarity Search<br/>top_k · doc_id filter · chunk_id filter]
+    F --> I
+    I --> J{Chunks retrieved?}
+    J -->|No| K[Return: No relevant information found<br/>no hallucination]
+    J -->|Yes| L[Context Formation<br/>join retrieved chunks]
+    L --> M[GPT-4 Generation<br/>constrained to retrieved context only]
+    M --> N[QueryResponse<br/>answer + retrieved_chunks]
+
+    N --> O[LlamaIndex RelevancyEvaluator<br/>response quality scoring]
+
+    P[GET /api/list_documents] --> Q[Pinecone Document Registry<br/>all uploaded doc_ids]
 ```
 
-### Pipeline Stages
+### API Surface
 
-| Stage | Description |
-|-------|-------------|
-| **PDF Extraction** | PyPDF2 extracts structured text from uploaded PDFs |
-| **Text Chunking** | Document split into meaningful, searchable segments |
-| **Embedding** | Each chunk embedded via `text-embedding-ada-002` |
-| **Pinecone Storage** | Vector embeddings stored for fast semantic retrieval |
-| **Query Embedding** | User question embedded and matched against document chunks |
-| **Context Formation** | Top-ranked chunks compiled into GPT-4 prompt |
-| **GPT-4 Generation** | Answer generated strictly from retrieved context |
-| **Evaluation** | LlamaIndex RelevancyEvaluator scores response quality |
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/upload` | `POST` | Upload PDF → extract → chunk → embed → store in Pinecone |
+| `/api/query` | `POST` | Query with optional `doc_id` + `chunk_id` scoping → grounded answer |
+| `/api/list_documents` | `GET` | List all documents currently indexed in Pinecone |
+
+---
+
+## 🔬 Worked Example
+
+**Upload:** `financial_report_2024.pdf` → 847 chunks extracted and indexed
+
+**Query:** *"What was the net revenue in Q3?"*
+
+**Pipeline trace:**
+```
+[Upload]     → PyPDF2 extracts 42 pages → cleaned → split into 847 chunks
+             → each chunk embedded via text-embedding-ada-002
+             → upserted to Pinecone with doc_id="financial_report_2024.pdf"
+
+[Query]      → "What was the net revenue in Q3?" embedded
+             → Pinecone similarity search: top_k=5, doc_id filter active
+             → 5 chunks retrieved from financial_report_2024.pdf only
+
+[Prompt]     → "Using the following document content, provide a concise
+               and accurate answer... Do not speculate beyond the provided content."
+             → GPT-4 constrained strictly to retrieved context
+
+[Response]   → answer: "Q3 net revenue was $4.2B, up 12% YoY per page 18."
+             → retrieved_chunks: [chunk_1, chunk_2, ..., chunk_5] returned alongside
+
+[Evaluation] → LlamaIndex RelevancyEvaluator scores response against retrieved context
+```
+
+**What happens on a question the document can't answer:**
+```
+[Query]      → "Who is the CEO of Apple?"
+[Retrieval]  → 0 relevant chunks found for doc_id="financial_report_2024.pdf"
+[Response]   → "No relevant information found."   ← never hallucinates
+```
+
+---
+
+## ⚙️ Engineering Decisions
+
+**Per-document query scoping via Pinecone metadata filtering**
+Naively querying a shared Pinecone index returns chunks from all uploaded documents — answers bleed across files. DocuMind stores `doc_id` as metadata on every chunk at upsert time and applies it as a filter on every similarity search. Optional `chunk_id` filtering enables pinpoint retrieval of specific sections. This makes multi-document deployments correct by design rather than an afterthought.
+
+**Hard-constrained prompt to eliminate hallucination**
+Standard RAG prompts say "use this context to answer." DocuMind's prompt explicitly says:
+```
+"If the document does not contain relevant information, state that explicitly.
+Do not speculate beyond the provided content."
+```
+Combined with the graceful empty-retrieval path (`retrieved_chunks == [] → return "No relevant information found."`), the system has two independent hallucination guards — at the retrieval layer and at the generation layer.
+
+**Three-router modular FastAPI architecture**
+Upload, query, and document management are split into independent routers (`upload.py`, `query.py`, `list_documents.py`) each registered under `/api`. This means each pipeline stage can be tested, extended, or replaced independently — adding a new embedding model or chunking strategy only touches one module, not the entire backend.
+
+**Configurable CORS with environment-driven origins**
+Frontend URL and allowed origins are driven by `config.py` (`ALLOWED_ORIGINS`, `FRONTEND_URL`) rather than hardcoded — the same backend runs in local dev, staging, and production without code changes. `allow_credentials=True` with `allow_methods=["*"]` ensures multipart file uploads work correctly across browsers.
+
+**LlamaIndex evaluation without labeled ground truth**
+Standard RAG evaluation requires a labeled QA dataset to measure answer correctness. DocuMind uses LlamaIndex's `RelevancyEvaluator` which measures whether the generated response is consistent with the retrieved context — no labeled dataset required. This makes evaluation practical for any arbitrary PDF without upfront annotation work.
 
 ---
 
 ## 🔒 Trustworthy AI by Design
 
-DocuMind is built around four trustworthy AI principles:
+DocuMind was built with four explainability principles as first-class requirements:
 
-**Evidence-Backed Answers** — The LLM is constrained to answer only from retrieved document chunks. No hallucination, no guessing. Retrieved snippets are shown alongside every answer so users can verify.
+**Evidence-backed answers** — GPT-4 is prompted to answer only from retrieved chunks. `retrieved_chunks` are returned in the API response alongside the answer so every claim is traceable to a source.
 
-**Explainability** — Every response shows which document sections were retrieved, their similarity scores, and how they contributed to the final answer. The full chain from Query → Retrieval → Reasoning → Answer is visible.
+**Retrieval transparency** — The query pipeline surfaces which chunks were retrieved, in what order, and from which document. The user sees the evidence, not just the conclusion.
 
-**Transparency** — Retrieved chunks, their rankings, and their contribution to the response are all surfaced to the user — not hidden in a black box.
+**Graceful uncertainty** — When retrieval finds nothing relevant, the system says so explicitly rather than generating a plausible-sounding but unsupported answer.
 
-**Hallucination Mitigation** — Ambiguous queries trigger clarification rather than confident incorrect answers. The system never generates beyond its retrieved evidence.
+**Scoped context** — Per-document filtering ensures answers are drawn from the correct source document, not contaminated by other uploaded files in the shared index.
 
 ---
 
@@ -103,64 +171,53 @@ DocuMind is built around four trustworthy AI principles:
 - OpenAI API key
 - Pinecone API key (free tier available)
 
-### 1. Clone the Repository
+### Backend Setup
 
 ```bash
 git clone https://github.com/krishnakoushik225/DocuMind
-cd DocuMind
-```
-
-### 2. Backend Setup
-
-```bash
-cd backend
+cd DocuMind/backend
 pip install -r requirements.txt
 ```
 
-Create a `.env` file:
+Create `.env`:
 ```
-OPENAI_API_KEY=your_key
-PINECONE_API_KEY=your_key
+OPENAI_API_KEY=your_openai_key
+PINECONE_API_KEY=your_pinecone_key
 PINECONE_INDEX=documind
+FRONTEND_URL=http://localhost:5173
 ```
 
-Run the backend:
+Run:
 ```bash
 uvicorn main:app --reload
-# Runs at http://127.0.0.1:8000
+# API running at http://127.0.0.1:8000
+# Docs at http://127.0.0.1:8000/docs
 ```
 
-### 3. Frontend Setup
+### Frontend Setup
 
 ```bash
 cd ../ui-v1
 npm install
 npm run dev
-# Runs at http://localhost:5173
+# Running at http://localhost:5173
 ```
-
----
-
-## 🎮 Usage
-
-1. **Upload** — drag and drop a PDF via the web interface
-2. **Wait** — DocuMind extracts, chunks, embeds, and indexes (~5 seconds)
-3. **Ask** — type any natural language question about the document
-4. **Read** — get a grounded answer with retrieved evidence snippets and citations
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Frontend | React.js (chat-based interface) |
-| Backend | FastAPI (Python) |
-| PDF Processing | PyPDF2 (structured text extraction) |
-| Embedding Model | OpenAI `text-embedding-ada-002` |
-| Vector Database | Pinecone |
-| LLM | OpenAI GPT-4 |
-| Evaluation | LlamaIndex RelevancyEvaluator |
+| Layer | Technology | Role |
+|---|---|---|
+| Frontend | React + Vite | Chat-based document interface |
+| Backend | FastAPI (async) | Three-router API: upload / query / documents |
+| PDF Processing | PyPDF2 | Structured text extraction from PDFs |
+| Text Splitting | LangChain `CharacterTextSplitter` | Configurable chunking with overlap |
+| Embedding | OpenAI `text-embedding-ada-002` | Semantic vector representation |
+| Vector DB | Pinecone | Similarity search with metadata filtering |
+| LLM | OpenAI GPT-4 | Context-constrained answer generation |
+| Retrieval | LlamaIndex | Similarity search + RelevancyEvaluator |
+| Config | Environment-driven (`config.py`) | CORS origins, chunk params, upload dir |
 
 ---
 
@@ -169,13 +226,26 @@ npm run dev
 ```
 DocuMind/
 ├── backend/
-│   ├── main.py              # FastAPI entrypoint
+│   ├── main.py                    # FastAPI entrypoint — 3 routers, CORS config
+│   ├── config.py                  # Env-driven: API keys, chunk_size, overlap, CORS
+│   ├── routes/
+│   │   ├── upload.py              # POST /api/upload — extract, chunk, embed, store
+│   │   ├── query.py               # POST /api/query — retrieve, constrain, generate
+│   │   └── list_documents.py      # GET /api/list_documents — Pinecone doc registry
+│   ├── services/
+│   │   ├── vector_store.py        # Pinecone upsert, similarity search, doc listing
+│   │   ├── embedding_service.py   # text-embedding-ada-002 wrapper
+│   │   └── llm_service.py         # GPT-4 client wrapper
+│   ├── models/
+│   │   └── document.py            # QueryRequest, QueryResponse Pydantic models
 │   └── requirements.txt
 ├── ui-v1/
-│   ├── src/                 # React frontend
-│   ├── package.json
-│   └── vite.config.ts
-├── Home Page.png            # Screenshots
+│   ├── src/
+│   │   ├── App.jsx                # Chat interface
+│   │   └── App.css
+│   ├── vite.config.ts
+│   └── package.json
+├── Home Page.png
 ├── Sample Query.png
 ├── Picture1.png
 ├── Picture2.png
@@ -184,28 +254,16 @@ DocuMind/
 
 ---
 
-## 📊 Evaluation
-
-Response quality is assessed using **LlamaIndex** without needing pre-labeled datasets:
-
-- **RelevancyEvaluator** — verifies generated responses align with retrieved document sections
-- **Contextual relevance scoring** — measures how well retrieved chunks match the user query
-- **Factual consistency** — cross-verifies LLM output against source evidence
-
-**References:**
-- [LlamaIndex Relevancy Evaluator](https://docs.llamaindex.ai/en/stable/examples/evaluation/relevancy_eval.html)
-- [LlamaIndex Evaluation Guide](https://docs.llamaindex.ai/en/module_guides/evaluating/usage_pattern.html)
-
----
-
 ## 🔭 Roadmap
 
-- [ ] Multi-document cross-reference queries
-- [ ] Conversation memory with follow-up questions
+- [ ] Multi-document cross-reference queries (single question, multiple PDFs)
+- [ ] Conversation memory — follow-up questions with session context
+- [ ] Streaming token output to frontend in real-time
+- [ ] OCR support for scanned PDFs (Tesseract / AWS Textract)
 - [ ] Agentic upgrade — multi-hop reasoning across document sections
-- [ ] OCR support for scanned PDFs
-- [ ] Document comparison mode
-- [ ] Export annotated answers as PDF
+- [ ] Document comparison mode — diff two PDFs via natural language
+- [ ] Export annotated answers as PDF with highlighted source passages
+- [ ] Hybrid retrieval — BM25 + semantic search for keyword-dense documents
 
 ---
 
@@ -215,4 +273,4 @@ MIT — free to use and build on.
 
 ---
 
-*Built by [Krishna Koushik Unnam](https://github.com/krishnakoushik225) · AI Systems Developer*
+*Built by [Krishna Koushik Unnam](https://github.com/krishnakoushik225)*
